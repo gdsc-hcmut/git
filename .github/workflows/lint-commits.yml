@@ -1,33 +1,29 @@
-name: Run commitlint on pull request
+name: Pull request
 
 on:
   pull_request:
-    types:
-      - opened
-      - synchronize
+    branches:
+      - main
+  push:
+    branches:
+      - dev
 
 jobs:
-  run-commitlint-on-pull-request:
+  verify-pull-request:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Cache node modules
-        uses: actions/cache@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          path: |
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Setup Node
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14.x
-      - name: Install dependencies
-        run: npm install
-      - name: Validate all commits from PR
+          node-version: 20
+          cache: 'yarn'
+
+      - name: Check commit message convention
         run: |
-          npm install @commitlint/cli @commitlint/config-conventional -D
-          npm commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
+          yarn add @commitlint/cli @commitlint/config-conventional -D
+          yarn commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
