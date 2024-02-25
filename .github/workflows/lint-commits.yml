@@ -1,4 +1,4 @@
-name: Run commitlint on pull request 
+name: Run commitlint on pull request
 
 on:
   pull_request:
@@ -28,8 +28,5 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Validate all commits from PR
-        run: >
-          for commit in $(git rev-list ${{ github.base_ref }}..${{
-          github.head_ref }}); do
-              npx commitlint --from HEAD~${{ github.event.pull_request.commits }} --to HEAD --verbose
-          done
+        run: |
+          npm commitlint --from ${{ github.event.pull_request.head.sha }}~${{ github.event.pull_request.commits }} --to ${{ github.event.pull_request.head.sha }} --verbose
