@@ -1,4 +1,4 @@
-name: Commit Message Linting
+name: Run commitlint on pull request 
 
 on:
   pull_request:
@@ -7,13 +7,12 @@ on:
       - synchronize
 
 jobs:
-  lint-commits:
+  run-commitlint-on-pull-request:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Cache node modules
         uses: actions/cache@v2
         with:
@@ -22,26 +21,15 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node
+        uses: actions/setup-node@v2
         with:
-          node-version: '14'
-
+          node-version: 14.x
       - name: Install dependencies
         run: npm install
-
-      - name: Get commit range
-        id: commit-range
-        run: |
-          echo "::set-output name=range::$(git rev-list -n 1 ${{ github.event.before }}^..${{ github.sha }})"
-        shell: bash
-
-      - name: Run linting on each commit
-        run: |
-          IFS=$'\n' # Set Internal Field Separator to newline
-          for commit in $(git rev-list --reverse ${COMMIT_RANGE}); do
-            npx commitlint --from=$commit --to=$commit
+      - name: Validate all commits from PR
+        run: >
+          for commit in $(git rev-list ${{ github.base_ref }}..${{
+          github.head_ref }}); do
+              npx commitlint --from HEAD~${{ github.event.pull_request.commits }} --to HEAD --verbose
           done
-        env:
-          COMMIT_RANGE: ${{ steps.commit-range.outputs.range }}
