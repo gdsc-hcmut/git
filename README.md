@@ -3,7 +3,11 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 ## Getting Started
 
 Test
+<<<<<<< HEAD
 change recommit hi hello
+=======
+change recommit
+>>>>>>> main
 First, run the development server:
 
 ```bash
