@@ -4,6 +4,7 @@ on:
   pull_request:
     types:
       - opened
+      - synchronize
 
 jobs:
   lint-commits:
@@ -13,6 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: |
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -21,5 +31,8 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install commitlint
+        run: npm install -g @commitlint/cli @commitlint/config-conventional
+
       - name: Run linting
-        run: npm run commitlint
+        run: npx commitlint --from=$GITHUB_SHA
