@@ -17,6 +17,9 @@ export default function Home() {
           >
             Hello
             By{" "}
+            <span className="pointer-events-auto font-bold">
+              Vercel
+            </span>
             <Image
               src="/vercel.svg"
               alt="Vercel Logo"
