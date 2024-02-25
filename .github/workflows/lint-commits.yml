@@ -31,8 +31,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install commitlint
-        run: npm install -g @commitlint/cli @commitlint/config-conventional
+      - name: Get commit range
+        id: commit-range
+        run: |
+          echo "::set-output name=range::$(git rev-list -n 1 ${{ github.event.before }}^..${{ github.sha }})"
+        shell: bash
 
-      - name: Run linting
-        run: npx commitlint --from=$GITHUB_SHA
+      - name: Run linting on each commit
+        run: |
+          IFS=$'\n' # Set Internal Field Separator to newline
+          for commit in $(git rev-list --reverse ${COMMIT_RANGE}); do
+            npx commitlint --from=$commit --to=$commit
+          done
+        env:
+          COMMIT_RANGE: ${{ steps.commit-range.outputs.range }}
